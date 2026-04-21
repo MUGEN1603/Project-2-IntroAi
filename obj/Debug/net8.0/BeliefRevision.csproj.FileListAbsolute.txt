@@ -1,0 +1,14 @@
+C:\Users\s192830\RiderProjects\BeliefRevision\bin\Debug\net8.0\BeliefRevision.exe
+C:\Users\s192830\RiderProjects\BeliefRevision\bin\Debug\net8.0\BeliefRevision.deps.json
+C:\Users\s192830\RiderProjects\BeliefRevision\bin\Debug\net8.0\BeliefRevision.runtimeconfig.json
+C:\Users\s192830\RiderProjects\BeliefRevision\bin\Debug\net8.0\BeliefRevision.dll
+C:\Users\s192830\RiderProjects\BeliefRevision\bin\Debug\net8.0\BeliefRevision.pdb
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.AssemblyInfoInputs.cache
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.AssemblyInfo.cs
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.csproj.CoreCompileInputs.cache
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.dll
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\refint\BeliefRevision.dll
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.pdb
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\BeliefRevision.genruntimeconfig.cache
+C:\Users\s192830\RiderProjects\BeliefRevision\obj\Debug\net8.0\ref\BeliefRevision.dll
