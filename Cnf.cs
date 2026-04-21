@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -73,6 +73,8 @@ namespace BeliefRevision
         /// <summary>Full pipeline: Formula → set of clauses (CNF).</summary>
         public static HashSet<Clause> ToClauses(Formula f)
         {
+            // ORDER IS CRITICAL: EliminateIff → EliminateImplies → Nnf → Distribute
+            // Changing this order will cause CollectDisjuncts to throw.
             var cnf = Distribute(Nnf(EliminateImplies(EliminateIff(f))));
             var clauses = new HashSet<Clause>();
             CollectConjuncts(cnf, clauses);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,7 +44,7 @@ namespace BeliefRevision
         //  A subset is a remainder iff it does not entail phi AND adding any
         //  missing formula from B WOULD entail phi (maximality).
         // ------------------------------------------------------------------
-        public static List<List<BeliefEntry>> ComputeRemainders(BeliefBase B, Formula phi)
+        internal static List<List<BeliefEntry>> ComputeRemainders(BeliefBase B, Formula phi)
         {
             var entries = B.Entries.ToList();
             int n = entries.Count;
@@ -89,10 +89,12 @@ namespace BeliefRevision
         //            count of next-highest, ..., count of lowest).
         //  Compared lexicographically, larger is better.
         // ------------------------------------------------------------------
-        public static List<List<BeliefEntry>> SelectByPriority(
+        internal static List<List<BeliefEntry>> SelectByPriority(
             BeliefBase B,
             List<List<BeliefEntry>> remainders)
         {
+            if (remainders.Count == 0) return remainders; // defensive guard
+
             var prioritiesDesc = B.Entries
                                    .Select(e => e.Priority)
                                    .Distinct()

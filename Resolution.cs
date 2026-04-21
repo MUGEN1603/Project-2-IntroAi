@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BeliefRevision
@@ -56,20 +56,40 @@ namespace BeliefRevision
             while (true)
             {
                 var newClauses = new HashSet<Clause>();
+                var toRemove = new HashSet<Clause>();
                 var list = clauses.ToList();
 
                 for (int i = 0; i < list.Count; i++)
                 {
+                    if (toRemove.Contains(list[i])) continue;
+                    
                     for (int j = i + 1; j < list.Count; j++)
                     {
+                        if (toRemove.Contains(list[j])) continue;
                         foreach (var resolvent in Resolvents(list[i], list[j]))
                         {
                             if (resolvent.IsEmpty) return true;     // ⊥ derived
                             if (resolvent.IsTautology) continue;     // useless, skip
+
+                            // Remove any clause in newClauses subsumed by resolvent
+                            newClauses.RemoveWhere(c => resolvent.Literals.IsSubsetOf(c.Literals));
+                            
+                            // Accumulate any clause in clauses subsumed by resolvent
+                            foreach (var clause in clauses)
+                                if (resolvent.Literals.IsSubsetOf(clause.Literals))
+                                    toRemove.Add(clause);
+
+                            // Don't add if an existing clause or newly generated clause subsumes the resolvent
+                            if (clauses.Any(c => !toRemove.Contains(c) && c.Literals.IsSubsetOf(resolvent.Literals)) ||
+                                newClauses.Any(c => c.Literals.IsSubsetOf(resolvent.Literals))) 
+                                continue;
+
                             newClauses.Add(resolvent);
                         }
                     }
                 }
+
+                clauses.ExceptWith(toRemove);
 
                 // Saturation: no genuinely new clause was produced.
                 if (newClauses.IsSubsetOf(clauses)) return false;

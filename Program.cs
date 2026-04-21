@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace BeliefRevision
@@ -70,6 +70,11 @@ namespace BeliefRevision
             Console.WriteLine("Extensionality: revise Bob by q  vs.  ¬¬q  (logically equivalent)");
             bool ext = AgmPostulates.Extensionality(Bob, q, F.Not(F.Not(q)));
             Console.WriteLine($"  holds? {ext}  (expect True)");
+
+            // ========================================================
+            //  Interactive Mode
+            // ========================================================
+            InteractiveMode(Bob);
         }
 
         // --------------------------------------------------------------
@@ -94,7 +99,81 @@ namespace BeliefRevision
             Console.WriteLine($"  Inclusion      : {AgmPostulates.Inclusion(B, phi)}");
             Console.WriteLine($"  Vacuity        : {AgmPostulates.Vacuity(B, phi)}");
             Console.WriteLine($"  Consistency    : {AgmPostulates.Consistency(B, phi)}");
-            Console.WriteLine($"  Extensionality : {AgmPostulates.Extensionality(B, phi, phi)}  (self)");
+            var doubleNeg = F.Not(F.Not(phi));
+            Console.WriteLine($"  Extensionality : {AgmPostulates.Extensionality(B, phi, doubleNeg)}  (φ vs ¬¬φ)");
+        }
+
+        static void InteractiveMode(BeliefBase initialBase)
+        {
+            Console.WriteLine("\n=== Interactive Mode ===");
+            Console.WriteLine("Starting from Bob's belief base (pre-loaded above).");
+            Console.WriteLine("Type 'reset' to start from an empty base.");
+            Console.WriteLine("Commands: revise <formula>, contract <formula>, expand <formula>, print, reset, exit");
+            Console.WriteLine("Supported syntax: atoms (p, q, myAtom), not, and, or, implies, iff, and parentheses.");
+            Console.WriteLine("Example: revise p and not q");
+
+            var currentBase = initialBase.Copy();
+            
+            while (true)
+            {
+                Console.WriteLine($"\nCurrent Base: {currentBase}");
+                Console.Write("> ");
+                var input = Console.ReadLine();
+                
+                if (string.IsNullOrWhiteSpace(input)) continue;
+                var trimmed = input.Trim();
+                if (trimmed.Equals("exit", StringComparison.OrdinalIgnoreCase)) break;
+                if (trimmed.Equals("reset", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentBase = new BeliefBase();
+                    Console.WriteLine("Base reset to empty.");
+                    continue;
+                }
+                if (trimmed.Equals("print", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"Base: {currentBase}");
+                    continue;
+                }
+
+                int spaceIndex = trimmed.IndexOf(' ');
+                if (spaceIndex < 0)
+                {
+                    Console.WriteLine("Unknown command. Use: revise <formula>, contract <formula>, expand <formula>, print, or exit");
+                    continue;
+                }
+
+                string command = trimmed.Substring(0, spaceIndex).ToLowerInvariant();
+                string formulaStr = trimmed.Substring(spaceIndex + 1);
+
+                try
+                {
+                    var formula = Parser.Parse(formulaStr);
+                    Console.WriteLine($"Parsed formula: {formula}");
+
+                    switch (command)
+                    {
+                        case "revise":
+                            currentBase = Revision.Revise(currentBase, formula);
+                            Console.WriteLine("Revision successful.");
+                            break;
+                        case "contract":
+                            currentBase = Contraction.Contract(currentBase, formula);
+                            Console.WriteLine("Contraction successful.");
+                            break;
+                        case "expand":
+                            currentBase = Revision.Expand(currentBase, formula);
+                            Console.WriteLine("Expansion successful.");
+                            break;
+                        default:
+                            Console.WriteLine($"Unknown command: {command}. Expected 'revise', 'contract', or 'expand'.");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing command: {ex.Message}");
+                }
+            }
         }
     }
 }

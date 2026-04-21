@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BeliefRevision
@@ -32,6 +32,8 @@ namespace BeliefRevision
         public int Count => entries.Count;
 
         /// <summary>Add a formula with a priority. Syntactic duplicates are skipped.</summary>
+        /// <remarks>Note: This only checks syntactic equality. Adding a logically equivalent formula
+        /// (e.g. p -> q vs ¬p ∨ q) will result in a duplicate entry, potentially duplicating priority weight.</remarks>
         public void Add(Formula formula, int priority = 0)
         {
             if (entries.Any(e => e.Formula.Equals(formula))) return;
@@ -48,11 +50,6 @@ namespace BeliefRevision
 
         public bool Contains(Formula formula) =>
             entries.Any(e => e.Formula.Equals(formula));
-
-        /// <summary>Formulas grouped by priority, LOWEST first.
-        /// Stage 3 contraction will remove the lowest-priority group first.</summary>
-        public IEnumerable<IGrouping<int, BeliefEntry>> GroupsLowestFirst() =>
-            entries.GroupBy(e => e.Priority).OrderBy(g => g.Key);
 
         
         /*
