@@ -1,43 +1,71 @@
 # Belief Revision Engine
-**Course:** 02180 Introduction to AI — Assignment 2
-**Language:** C# (.NET)
 
-A belief revision engine for propositional logic. The agent holds a set of beliefs with priorities, and can revise, contract, or expand those beliefs when new information arrives.
+A propositional logic belief revision engine built in C# (.NET 9). The agent holds a set of beliefs, each with a priority, and can revise, contract, or expand them when new information arrives.
 
 ---
 
-## How to Run
+## 1. Install .NET 9
 
-Make sure you have the [.NET SDK](https://dotnet.microsoft.com/download) installed. Then navigate to the project folder and run:
+You need the .NET 9 SDK. You only have to do this once.
+
+**macOS**
+```bash
+brew install dotnet
+```
+Or download the installer directly: https://dotnet.microsoft.com/download/dotnet/9.0
+
+After installing, verify:
+```bash
+dotnet --version   # should print 9.x.x
+```
+
+**Windows**
+1. Go to https://dotnet.microsoft.com/download/dotnet/9.0
+2. Download the **SDK** installer (not the Runtime)
+3. Run the installer — it adds `dotnet` to your PATH automatically
+4. Open a new terminal (PowerShell or Command Prompt) and verify:
+```powershell
+dotnet --version   # should print 9.x.x
+```
+
+---
+
+## 2. Run the Project
 
 ```bash
+# navigate to the project folder
+cd path/to/BeliefRevision
+
+# build and run
 dotnet run
 ```
 
-That's it. No extra setup needed.
+That's it. No packages to install, no extra setup.
 
 ---
 
-## What Happens When You Run It
+## 3. What Happens When You Run It
 
-The program runs in two phases:
+The program runs in two phases back to back.
 
 ### Phase 1 — Automatic Demo
-The program first runs a fixed demonstration using **Bob's belief base** from the lecture:
 
-| Formula | Priority | Meaning |
+It runs a fixed demo using **Bob's belief base** (from the course lectures):
+
+| Formula | Priority | Notes |
 |---|---|---|
-| `p` | 2 (highest) | Bob strongly believes p |
-| `q` | 1 | Bob believes q |
-| `p → ¬q` | 0 (lowest) | Bob weakly believes p implies not-q |
+| `p` | 2 | Strongest belief |
+| `q` | 1 | Medium belief |
+| `p → ¬q` | 0 | Weakest belief |
 
-This base is **inconsistent** — `p` and `q` together contradict `p → ¬q`.
+This base is **intentionally inconsistent** — `p` and `q` together contradict `p → ¬q`.
 
-The demo walks through:
-1. **Contraction** — remove `q` from the base using partial meet contraction
-2. **Expansion** — add `¬q` to the base (no consistency check)
-3. **Revision** — revise by `¬q` using the Levi Identity: `B * φ = (B ÷ ¬φ) + φ`
-4. **AGM Postulate Tests** — verifies all 5 postulates hold:
+The demo walks through each operation and prints the result:
+
+1. **Contraction** `B ÷ q` — removes `q` using partial-meet contraction
+2. **Expansion** `B + ¬q` — adds `¬q` directly (no conflict check)
+3. **Revision** `B * ¬q` — uses the Levi Identity to revise safely
+4. **AGM Postulate checks** — verifies all 5 postulates hold:
    - ✅ Success
    - ✅ Inclusion
    - ✅ Vacuity
@@ -45,18 +73,11 @@ The demo walks through:
    - ✅ Extensionality
 
 ### Phase 2 — Interactive Mode
-After the demo, you land in an interactive prompt where you can run your own operations.
 
----
+After the demo, you get a live prompt starting from Bob's base:
 
-## Interactive Mode
-
-```text
+```
 === Interactive Mode ===
-Starting from Bob's belief base (pre-loaded above).
-Type 'reset' to start from an empty base.
-Commands: revise <formula>, contract <formula>, expand <formula>, print, reset, exit
-
 Current Base: { [p=2] p, [p=1] q, [p=0] (p → ¬q) }
 > revise not q
 Parsed formula: ¬q
@@ -80,94 +101,200 @@ Current Base: { [p=1] (p → q) }
 > exit
 ```
 
-### Available Commands
+---
+
+## 4. Interactive Commands
 
 | Command | What it does |
 |---|---|
-| `revise <formula>` | Revise the base by the formula (removes conflicts first, then adds) |
-| `contract <formula>` | Remove the formula from the base while keeping as much as possible |
-| `expand <formula>` | Add the formula directly (no conflict check) |
-| `print` | Print the current base |
-| `reset` | Wipe the base to empty — useful for testing your own scenarios |
-| `exit` | Quit the program |
+| `revise <formula>` | Removes conflicts with φ, then adds φ (Levi Identity) |
+| `contract <formula>` | Removes φ from the base, keeping as much as possible |
+| `expand <formula>` | Adds φ directly — no conflict check |
+| `print` | Prints the current base |
+| `reset` | Wipes the base to empty |
+| `exit` | Quits the program |
 
 ---
 
-## Formula Syntax
+## 5. Formula Syntax
 
-You can type formulas using plain English words or symbols:
+Use plain English words or standard symbols — both work:
 
 | Connective | Accepted inputs |
 |---|---|
-| Not | `not`, `!`, `~`, `¬` |
-| And | `and`, `&`, `&&`, `∧` |
-| Or | `or`, `\|`, `\|\|`, `∨` |
-| Implies | `implies`, `->`, `→` |
-| Iff | `iff`, `<->`, `↔` |
-| Grouping | `(`, `)` |
+| Not | `not` `!` `~` `¬` |
+| And | `and` `&` `&&` `∧` |
+| Or | `or` `|` `||` `∨` |
+| Implies | `implies` `->` `→` |
+| Iff | `iff` `<->` `↔` |
+| Grouping | `(` `)` |
 
-Atoms can be any plain word: `p`, `q`, `r`, `rain`, `sunny`, `myAtom`.
+Atoms can be any plain word: `p`, `q`, `r`, `rain`, `sunny`, `alarm`.
 
-### Examples
-
-```text
+**Examples:**
+```
 revise not q
 revise p and not q
 revise p implies q
+revise (p or q) implies r
 contract p or q
 expand rain implies wet
-revise (p and q) implies r
 ```
 
-### Two things to know about parsing
-
-1. **`implies` is right-associative** — `p implies q implies r` is parsed as `p implies (q implies r)`. This is the standard mathematical convention for propositional logic.
-
-2. **Priority of new beliefs** — when you add a formula (via revise or expand), it gets priority = highest existing priority + 1. This means the newest information is always the most entrenched, which is the correct AGM behaviour.
+> **Note:** `implies` is right-associative — `p implies q implies r` parses as `p implies (q implies r)`.  
+> **Note:** When you add a formula via `revise` or `expand`, it gets priority = highest existing priority + 1.
 
 ---
 
-## How It Works — Stage by Stage
+## 6. Testing to the Limit
 
-### Stage 1: Belief Base
-Each belief is stored as a formula + a priority number. Higher priority = more entrenched = harder to remove during contraction.
+These scenarios push every part of the engine. Paste them into the interactive prompt in order.
 
-### Stage 2: Logical Entailment (Resolution)
-To check if the base entails a formula φ (`B ⊨ φ`), we use **refutation by resolution**:
-- Convert `B ∪ {¬φ}` to CNF (Conjunctive Normal Form)
-- Repeatedly resolve clause pairs
-- If the empty clause (⊥) is derived → φ is entailed
-- If no new clauses can be derived → φ is not entailed
-
-No external libraries are used — the CNF converter and resolution engine are implemented from scratch.
-
-### Stage 3: Contraction (`B ÷ φ`)
-Uses **Partial Meet Contraction**:
-1. Find all *remainder sets* — maximal subsets of B that do NOT entail φ
-2. Select the best ones using a priority-based selection function (keep whichever remainders preserve the highest-priority formulas)
-3. Return the intersection of the selected remainders
-
-### Stage 4: Expansion and Revision
-- **Expansion** (`B + φ`): just add φ to B with the highest priority. May make the base inconsistent.
-- **Revision** (`B * φ`): uses the **Levi Identity**:
-  ```
-  B * φ = (B ÷ ¬φ) + φ
-  ```
-  First contract by ¬φ (remove anything that conflicts), then expand by φ. Guarantees a consistent result when φ itself is consistent.
+### Test 1 — Build and destroy a consistent base
+```
+reset
+expand p
+expand q
+expand p implies q
+revise not p
+print
+```
+Expected: base no longer contains `p` (revised away).
 
 ---
 
-## Project Structure
+### Test 2 — Contraction vacuity (formula not in base)
+```
+reset
+expand p
+contract q
+print
+```
+Expected: base unchanged — you can't contract something that isn't entailed.
+
+---
+
+### Test 3 — Contraction of a tautology
+```
+reset
+expand p
+contract p or not p
+print
+```
+Expected: base unchanged — tautologies can't be contracted.
+
+---
+
+### Test 4 — Revise by contradiction (inconsistent input)
+```
+reset
+expand p
+revise p and not p
+print
+```
+Expected: `p ∧ ¬p` is added. The AGM Consistency postulate vacuously holds here (it only promises consistency when the *input* φ is itself consistent).
+
+---
+
+### Test 5 — Chain of revisions, conflicting beliefs
+```
+reset
+expand p
+expand q
+revise not p
+revise not q
+revise p and q
+print
+```
+Expected: final base contains `p ∧ q` as the newest (highest-priority) belief.
+
+---
+
+### Test 6 — Deeply nested formula
+```
+reset
+expand (p implies q) and (q implies r)
+expand not r
+revise p
+print
+```
+Expected: after expanding `¬r` and `(p→q)∧(q→r)`, revising by `p` forces a consistent outcome.
+
+---
+
+### Test 7 — Biconditional and double negation
+```
+reset
+expand p iff q
+revise not not p
+print
+```
+Expected: `¬¬p` is parsed correctly (equivalent to `p`) and revision works normally.
+
+---
+
+### Test 8 — Priority ordering matters
+```
+reset
+expand p
+expand q
+expand p implies not q
+contract q
+print
+```
+The newest formula has the highest priority. Contraction should prefer removing the lowest-priority formula to satisfy the removal requirement.
+
+---
+
+### Test 9 — Longer atom names (real-world modelling)
+```
+reset
+expand rain
+expand rain implies wet
+revise not wet
+print
+```
+Expected: `rain` is contracted since believing `¬wet` conflicts with `rain → wet`.
+
+---
+
+### Test 10 — Stress: max base size
+Contraction uses brute-force enumeration over all subsets, which is fast up to 15 entries and noticeable at 18–20. This pushes it near the limit:
+```
+reset
+expand a
+expand b
+expand c
+expand d
+expand e
+expand f
+expand g
+expand h
+expand i
+expand j
+expand k
+expand l
+expand m
+expand n
+expand o
+contract a
+print
+```
+Expected: base with 14 remaining formulas. If you push past 20 entries and then try to `contract`, the engine will throw a clear error message — that is intentional and expected.
+
+---
+
+## 7. Project Structure
 
 ```
 BeliefRevision/
 ├── Program.cs          # Entry point: demo + interactive mode
-├── Formula.cs          # AST nodes: Atom, Not, And, Or, Implies, Iff
-├── BeliefBase.cs       # Belief base: stores formulas with priorities
-├── Cnf.cs              # CNF conversion pipeline + Clause/Literal types
-├── Resolution.cs       # Resolution-based entailment checker
-├── Contraction.cs      # Partial meet contraction
+├── Formula.cs          # AST: Atom, Not, And, Or, Implies, Iff
+├── BeliefBase.cs       # Stores formulas with priorities
+├── Cnf.cs              # CNF conversion + Clause/Literal types
+├── Resolution.cs       # Resolution-based entailment (no external packages)
+├── Contraction.cs      # Partial-meet contraction
 ├── Revision.cs         # Expansion and revision (Levi Identity)
-├── AgmPostulates.cs    # AGM postulate verification (all 5)
+├── AgmPostulates.cs    # AGM postulate checks (all 5)
 └── Parser.cs           # Formula parser for interactive input
 ```
